@@ -145,15 +145,27 @@ export default function CreateRoadmap() {
           </button>
           <div className="w-px h-5 bg-gray-200" />
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="RoadMap Tree" className="w-7 h-7 rounded-md object-contain" />
+            <img src="/logo.png" alt="Node Road" className="w-7 h-7 rounded-md object-contain" />
             <span className="text-sm font-bold text-black">Create Roadmap</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-400 mr-2 border-r border-gray-200 pr-4">
             {nodes.length} nodes · {edges.length} connections
           </span>
+          <div className="relative group flex">
+            <button
+              disabled
+              className="px-4 py-2 text-gray-400 font-semibold text-sm rounded-lg flex items-center gap-2 border border-dashed border-gray-200 cursor-not-allowed transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              Preview
+            </button>
+            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-black text-white text-xs font-medium py-1.5 px-3 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-center">
+              Please click "Create" to save your roadmap first
+            </div>
+          </div>
           <button
             onClick={() => handleSave(nodes, edges)}
             disabled={saving || !title.trim()}

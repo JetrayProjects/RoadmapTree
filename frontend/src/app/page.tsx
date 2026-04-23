@@ -12,8 +12,8 @@ export default function Home() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="RoadMap Tree" className="w-10 h-10 rounded-xl object-contain" />
-            <span className="text-xl font-bold text-black">RoadMap Tree</span>
+            <img src="/logo.png" alt="Node Road" className="w-10 h-10 rounded-xl object-contain" />
+            <span className="text-xl font-bold text-white [-webkit-text-stroke:0.25px_black] font-[family-name:var(--font-vast-shadow)]">Node Road</span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -218,8 +218,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="RoadMap Tree" className="w-8 h-8 rounded-lg object-contain" />
-              <span className="font-semibold text-black">RoadMap Tree</span>
+              <img src="/logo.png" alt="Node Road" className="w-8 h-8 rounded-lg object-contain" />
+              <span className="font-semibold text-white [-webkit-text-stroke:0.25px_black] font-[family-name:var(--font-vast-shadow)]">Node Road</span>
             </div>
             <p className="text-sm text-gray-500">
               Build your learning journey, one node at a time.

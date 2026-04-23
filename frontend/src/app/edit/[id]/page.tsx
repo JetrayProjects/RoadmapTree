@@ -7,6 +7,7 @@ import RoadmapEditor from '@/components/RoadmapEditor';
 import { Node, Edge } from 'reactflow';
 import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import Link from 'next/link';
 
 export default function EditRoadmap() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function EditRoadmap() {
   const [loadingRoadmap, setLoadingRoadmap] = useState(true);
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Draggable split state
   const [splitPercent, setSplitPercent] = useState(30); // left panel width %
@@ -65,7 +67,7 @@ export default function EditRoadmap() {
         edgesSnapshot.forEach((edgeDoc) => {
           const edgeData = edgeDoc.data();
           loadedEdges.push({ id: edgeDoc.id, source: edgeData.sourceNodeId, target: edgeData.targetNodeId,
-            type: 'smoothstep', style: { stroke: '#000', strokeWidth: 2 } });
+            type: 'default', style: { stroke: '#000', strokeWidth: 2 } });
         });
         setEdges(loadedEdges);
       } catch (error) {
@@ -113,9 +115,11 @@ export default function EditRoadmap() {
     }
     setSaving(true);
     try {
+      const totalTime = updatedNodes.reduce((acc, node) => acc + (Number(node.data?.estimatedTime) || 0), 0);
+
       await setDoc(doc(db, 'roadmaps', id), {
         title: title.trim(), description: description.trim(), creatorId: user.id,
-        difficulty, estimatedTimeMinutes: 0, isPublic, isPaid: false, priceUSD: 0,
+        difficulty, estimatedTimeMinutes: totalTime, isPublic, isPaid: false, priceUSD: 0,
         tags: [], updatedAt: serverTimestamp(),
       });
       const existingNodes = await getDocs(collection(db, 'roadmaps', id, 'nodes'));
@@ -150,6 +154,20 @@ export default function EditRoadmap() {
     }
   };
 
+  const confirmDelete = async () => {
+    try {
+      const existingNodes = await getDocs(collection(db, 'roadmaps', id, 'nodes'));
+      const existingEdges = await getDocs(collection(db, 'roadmaps', id, 'edges'));
+      await Promise.all(existingNodes.docs.map(n => deleteDoc(n.ref)));
+      await Promise.all(existingEdges.docs.map(e => deleteDoc(e.ref)));
+      await deleteDoc(doc(db, 'roadmaps', id));
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Error deleting roadmap:', error);
+      alert('Failed to delete roadmap.');
+    }
+  };
+
   if (loading || loadingRoadmap || !user) {
     return (
       <div className="h-screen bg-gray-50 flex items-center justify-center">
@@ -177,15 +195,29 @@ export default function EditRoadmap() {
           </button>
           <div className="w-px h-5 bg-gray-200" />
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="RoadMap Tree" className="w-7 h-7 rounded-md object-contain" />
+            <img src="/logo.png" alt="Node Road" className="w-7 h-7 rounded-md object-contain" />
             <span className="text-sm font-bold text-black">Edit Roadmap</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 mr-2 border-r border-gray-200 pr-4">
             {nodes.length} nodes · {edges.length} connections
           </span>
+          <Link
+            href={`/roadmap/${id}`}
+            target="_blank"
+            className="px-4 py-2 text-gray-600 font-semibold text-sm hover:bg-gray-100 rounded-lg flex items-center gap-2 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Preview
+          </Link>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="px-4 py-2 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-all"
+          >
+            Delete
+          </button>
           <button
             onClick={() => handleSave(nodes, edges)}
             disabled={saving || !title.trim()}
@@ -356,6 +388,32 @@ export default function EditRoadmap() {
           <RoadmapEditor initialNodes={nodes} initialEdges={edges} onSave={handleSave} onChange={(n, e) => { setNodes(n); setEdges(e); }} />
         </div>
       </div>
+
+      {/* Delete Modal Popup */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Roadmap</h3>
+            <p className="text-gray-500 text-sm mb-6">
+              Are you sure you want to delete this roadmap? This action cannot be undone and will remove all nodes, edges, and resources.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="px-4 py-2 font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

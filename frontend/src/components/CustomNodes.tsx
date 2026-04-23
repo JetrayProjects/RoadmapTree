@@ -11,6 +11,7 @@ interface ResourceNodeData {
   resources: Resource[];
   estimatedTime: number;
   completed?: boolean;
+  progressPercent?: number;
   onLabelChange?: (newLabel: string) => void;
 }
 
@@ -67,9 +68,13 @@ export function ResourceNode({ data, selected }: NodeProps<ResourceNodeData>) {
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-lg min-w-[280px] max-w-[340px] ${
-        selected ? 'ring-2 ring-black shadow-xl' : 'border border-gray-200'
-      } ${data.completed ? 'bg-gray-50' : ''}`}
+      className={`rounded-xl shadow-lg min-w-[280px] max-w-[340px] transition-colors duration-300 ${
+        selected ? 'ring-2 ring-black shadow-xl' : ''
+      } ${
+        data.completed 
+          ? 'bg-green-100 border-2 border-green-400' 
+          : 'bg-white border border-gray-200'
+      }`}
     >
       <Handle
         type="target"
@@ -78,7 +83,7 @@ export function ResourceNode({ data, selected }: NodeProps<ResourceNodeData>) {
       />
       
       <div className="p-5">
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 relative text-center">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -86,11 +91,11 @@ export function ResourceNode({ data, selected }: NodeProps<ResourceNodeData>) {
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={commitEdit}
               onKeyDown={handleKeyDown}
-              className="text-base font-bold text-black bg-gray-50 border border-gray-300 rounded-md px-2 py-1 w-full outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              className="text-base font-bold text-black bg-gray-50 border border-gray-300 rounded-md px-2 py-1 w-full outline-none focus:ring-2 focus:ring-black focus:border-transparent text-center"
             />
           ) : (
             <span
-              className="text-base font-bold text-black truncate cursor-text"
+              className="text-base font-bold text-black truncate cursor-text block"
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
@@ -98,11 +103,6 @@ export function ResourceNode({ data, selected }: NodeProps<ResourceNodeData>) {
               title="Double-click to rename"
             >
               {data.label || 'Resource Node'}
-            </span>
-          )}
-          {data.completed && !isEditing && (
-            <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-semibold rounded-full flex-shrink-0 ml-2">
-              Done
             </span>
           )}
         </div>
@@ -113,37 +113,33 @@ export function ResourceNode({ data, selected }: NodeProps<ResourceNodeData>) {
           </p>
         )}
         
-        {data.resources && data.resources.length > 0 && (
-          <div className="space-y-2 border-t border-gray-100 pt-3">
-            {data.resources.slice(0, 3).map((resource, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2.5 text-sm bg-gray-50 p-2.5 rounded-lg"
-              >
-                <span className="flex-shrink-0 text-base">
-                  {resourceTypeIcons[resource.type] || '📄'}
-                </span>
-                <span className="truncate flex-1 text-gray-700 font-medium">
-                  {resource.title || resourceTypeLabels[resource.type]}
-                </span>
-              </div>
-            ))}
-            {data.resources.length > 3 && (
-              <div className="text-xs text-gray-400 text-center font-medium">
-                +{data.resources.length - 3} more resources
-              </div>
-            )}
+        {data.progressPercent !== undefined && data.resources?.length > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Progress</span>
+              <span className="text-[10px] font-bold text-green-600">{Math.round(data.progressPercent)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="bg-green-500 h-1.5 rounded-full transition-all duration-500 ease-out" 
+                style={{ width: `${data.progressPercent}%` }}
+              ></div>
+            </div>
           </div>
         )}
         
         {data.estimatedTime > 0 && (
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-400">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {data.estimatedTime >= 60
-              ? `${Math.floor(data.estimatedTime / 60)}h${data.estimatedTime % 60 > 0 ? ` ${data.estimatedTime % 60}m` : ''}`
-              : `${data.estimatedTime}m`}
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-center text-sm font-medium text-gray-600">
+            <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-black font-semibold">
+                {data.estimatedTime >= 60
+                  ? `${Math.floor(data.estimatedTime / 60)}h${data.estimatedTime % 60 > 0 ? ` ${data.estimatedTime % 60}m` : ''}`
+                  : `${data.estimatedTime}m`}
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -265,10 +261,7 @@ export function TextNode({ data, selected }: NodeProps<TextNodeData>) {
       />
       
       <div className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
+        <div className="flex items-center justify-center gap-2 mb-2">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -276,11 +269,11 @@ export function TextNode({ data, selected }: NodeProps<TextNodeData>) {
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={commitEdit}
               onKeyDown={handleKeyDown}
-              className="font-semibold text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md px-1.5 py-0.5 w-full outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+              className="font-semibold text-sm text-center text-gray-700 bg-gray-50 border border-gray-300 rounded-md px-1.5 py-0.5 w-full outline-none focus:ring-2 focus:ring-black focus:border-transparent"
             />
           ) : (
             <span
-              className="font-semibold text-sm text-gray-700 cursor-text"
+              className="font-semibold text-sm text-gray-700 cursor-text text-center block"
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);

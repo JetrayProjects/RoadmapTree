@@ -87,6 +87,7 @@ export interface Progress {
   userId: string;
   roadmapId: string;
   completedNodeIds: string[];
+  completedResourceIds?: string[];
   startedAt: Date;
   lastUpdatedAt: Date;
   completedAt?: Date;

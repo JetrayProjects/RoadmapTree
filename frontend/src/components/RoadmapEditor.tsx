@@ -18,7 +18,7 @@ const nodeTypes: NodeTypes = {
 };
 
 const defaultEdgeOptions = {
-  type: 'smoothstep',
+  type: 'default',
   style: { stroke: '#000', strokeWidth: 2 },
   markerEnd: { type: MarkerType.ArrowClosed, color: '#000' },
 };
@@ -28,10 +28,12 @@ interface RoadmapEditorProps {
   initialEdges?: Edge[];
   onSave?: (nodes: Node[], edges: Edge[]) => void;
   onChange?: (nodes: Node[], edges: Edge[]) => void;
+  onNodeSelect?: (node: Node | null) => void;
   readOnly?: boolean;
+  completedResourceIds?: string[];
 }
 
-function RoadmapEditorInner({ initialNodes = [], initialEdges = [], onSave, onChange, readOnly = false }: RoadmapEditorProps) {
+function RoadmapEditorInner({ initialNodes = [], initialEdges = [], onSave, onChange, readOnly = false, onNodeSelect, completedResourceIds = [] }: RoadmapEditorProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -40,24 +42,30 @@ function RoadmapEditorInner({ initialNodes = [], initialEdges = [], onSave, onCh
   const [editorCollapsed, setEditorCollapsed] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (readOnly) setNodes(initialNodes);
+  }, [initialNodes, readOnly, setNodes]);
+
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({ ...params, ...defaultEdgeOptions }, eds)),
     [setEdges]
   );
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
+    setSelectedNode(node);
     if (!readOnly) {
-      setSelectedNode(node);
       setEditingNode(node);
       setIsEditorOpen(true);
     }
-  }, [readOnly]);
+    if (onNodeSelect) onNodeSelect(node);
+  }, [readOnly, onNodeSelect]);
 
 
 
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
-  }, []);
+    if (onNodeSelect) onNodeSelect(null);
+  }, [onNodeSelect]);
 
   const addNode = (type: 'resource' | 'text') => {
     const position = { x: 250, y: 100 + nodes.length * 150 };
@@ -113,16 +121,26 @@ function RoadmapEditorInner({ initialNodes = [], initialEdges = [], onSave, onCh
     if (onChange) onChange(nodes, edges);
   }, [nodes, edges, onChange]);
 
-  // Inject onLabelChange callback into every node's data
+  // Inject onLabelChange callback and progress data into every node
   const nodesWithCallbacks = useMemo(() =>
-    nodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        onLabelChange: (newLabel: string) => updateNodeLabel(node.id, newLabel),
-      },
-    })),
-    [nodes, updateNodeLabel]
+    nodes.map((node) => {
+      // Calculate progress if it's a resource node
+      const nodeResources = node.data.resources || [];
+      const completedCount = nodeResources.filter((r: any) => completedResourceIds?.includes(r.id)).length;
+      const progressPercent = nodeResources.length > 0 ? (completedCount / nodeResources.length) * 100 : 0;
+      const isCompleted = nodeResources.length > 0 && completedCount === nodeResources.length;
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          progressPercent,
+          completed: isCompleted,
+          onLabelChange: (newLabel: string) => updateNodeLabel(node.id, newLabel),
+        },
+      };
+    }),
+    [nodes, updateNodeLabel, completedResourceIds]
   );
 
   return (

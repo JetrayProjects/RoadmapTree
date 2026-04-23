@@ -1,4 +1,4 @@
-# RoadMap Tree
+# Node Road
 
 A web application for creating and sharing visual learning roadmaps. Built with React Flow, Firebase, and Next.js.
 
@@ -24,8 +24,8 @@ A web application for creating and sharing visual learning roadmaps. Built with 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/JetrayProjects/RoadmapTree.git
-cd RoadmapTree/frontend
+git clone https://github.com/JetrayProjects/NodeRoad.git
+cd NodeRoad/frontend
 ```
 
 ### 2. Install Dependencies
@@ -84,11 +84,18 @@ service cloud.firestore {
       
       // Nodes and edges follow roadmap permissions
       match /nodes/{nodeId} {
-        allow read, write: if get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.creatorId == request.auth.uid;
+        allow read: if get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.isPublic == true || 
+                      (request.auth != null && request.auth.uid == get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.creatorId);
+        allow write: if request.auth != null && request.auth.uid == get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.creatorId;
       }
       match /edges/{edgeId} {
-        allow read, write: if get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.creatorId == request.auth.uid;
+        allow read: if get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.isPublic == true || 
+                      (request.auth != null && request.auth.uid == get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.creatorId);
+        allow write: if request.auth != null && request.auth.uid == get(/databases/$(database)/documents/roadmaps/$(roadmapId)).data.creatorId;
       }
+    }
+    match /progress/{progressId} {
+      allow read, write: if request.auth != null && progressId.matches(request.auth.uid + '_.*');
     }
   }
 }

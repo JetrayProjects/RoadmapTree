@@ -13,7 +13,7 @@ interface RoadmapPreview {
   difficulty: string;
   creatorName: string;
   creatorAvatar: string;
-  nodeCount: number;
+  estimatedTimeMinutes: number;
   stats: {
     views: number;
     saves: number;
@@ -51,13 +51,6 @@ export default function RoadmapsPage() {
             }
           } catch (e) {}
 
-          let nodeCount = 0;
-          try {
-            const { collection: collectFn, getCountFromServer } = await import('firebase/firestore');
-            const nodesSnapshot = await getCountFromServer(collectFn(db, 'roadmaps', doc.id, 'nodes'));
-            nodeCount = nodesSnapshot.data().count;
-          } catch (e) {}
-
           loadedRoadmaps.push({
             id: doc.id,
             title: data.title || 'Untitled',
@@ -65,7 +58,7 @@ export default function RoadmapsPage() {
             difficulty: data.difficulty || 'beginner',
             creatorName,
             creatorAvatar,
-            nodeCount,
+            estimatedTimeMinutes: data.estimatedTimeMinutes || 0,
             stats: data.stats || { views: 0, saves: 0, averageRating: 0 },
             createdAt: data.createdAt?.toDate() || new Date(),
           });
@@ -111,8 +104,8 @@ export default function RoadmapsPage() {
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="RoadMap Tree" className="w-10 h-10 rounded-xl object-contain" />
-            <span className="text-xl font-bold text-black">RoadMap Tree</span>
+            <img src="/logo.png" alt="Node Road" className="w-10 h-10 rounded-xl object-contain" />
+            <span className="text-xl font-bold text-white [-webkit-text-stroke:0.25px_black] font-[family-name:var(--font-vast-shadow)]">Node Road</span>
           </Link>
           
           <div className="flex items-center gap-6">
@@ -253,8 +246,13 @@ export default function RoadmapsPage() {
                       )}
                       <span className="text-sm text-gray-600">{roadmap.creatorName}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      {roadmap.nodeCount} nodes
+                    <div className="flex items-center gap-1 text-xs text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md">
+                      <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      {roadmap.estimatedTimeMinutes > 0 
+                        ? (roadmap.estimatedTimeMinutes >= 60 
+                            ? `${Math.floor(roadmap.estimatedTimeMinutes/60)}h ${roadmap.estimatedTimeMinutes%60>0?`${roadmap.estimatedTimeMinutes%60}m`:''}` 
+                            : `${roadmap.estimatedTimeMinutes}m`) 
+                        : '0m'}
                     </div>
                   </div>
                 </div>
