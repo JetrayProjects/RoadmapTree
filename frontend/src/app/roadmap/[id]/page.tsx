@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { doc, getDoc, collection, getDocs, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import RoadmapEditor from '@/components/RoadmapEditor';
 import { Node, Edge } from 'reactflow';
 import Link from 'next/link';
@@ -13,6 +14,7 @@ export default function RoadmapView() {
   const params = useParams();
   const id = params.id as string;
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [roadmap, setRoadmap] = useState<any>(null);
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -101,7 +103,7 @@ export default function RoadmapView() {
 
   const toggleResourceComplete = async (resourceId: string) => {
     if (!user) {
-      alert('Please sign in to track your progress');
+      showToast('Please sign in to track your progress', 'info');
       return;
     }
     

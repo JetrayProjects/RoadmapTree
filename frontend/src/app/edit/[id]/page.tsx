@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import RoadmapEditor from '@/components/RoadmapEditor';
 import { Node, Edge } from 'reactflow';
 import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs, deleteDoc } from 'firebase/firestore';
@@ -14,6 +15,7 @@ export default function EditRoadmap() {
   const params = useParams();
   const id = params.id as string;
   const { user, loading } = useAuth();
+  const { showToast } = useToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
@@ -110,7 +112,7 @@ export default function EditRoadmap() {
 
   const handleSave = async (updatedNodes: Node[], updatedEdges: Edge[]) => {
     if (!user || !title.trim()) {
-      alert('Please enter a title for your roadmap');
+      showToast('Please enter a title for your roadmap', 'info');
       return;
     }
     setSaving(true);
@@ -144,11 +146,11 @@ export default function EditRoadmap() {
         });
       }));
 
-      alert('Roadmap saved successfully!');
+      showToast('Roadmap saved successfully!', 'success');
       router.push(`/roadmap/${id}`);
     } catch (error) {
       console.error('Error saving roadmap:', error);
-      alert('Failed to save roadmap. Please try again.');
+      showToast('Failed to save roadmap. Please try again.', 'error');
     } finally {
       setSaving(false);
     }
@@ -164,7 +166,7 @@ export default function EditRoadmap() {
       router.push('/dashboard');
     } catch (error) {
       console.error('Error deleting roadmap:', error);
-      alert('Failed to delete roadmap.');
+      showToast('Failed to delete roadmap.', 'error');
     }
   };
 
@@ -248,15 +250,7 @@ export default function EditRoadmap() {
           className="h-full bg-white border-r border-gray-200 flex flex-col overflow-hidden flex-shrink-0"
           style={{ width: `${splitPercent}%` }}
         >
-          {/* Panel tab header */}
-          <div className="flex items-center gap-1 px-4 py-2.5 border-b border-gray-100 bg-gray-50/80 flex-shrink-0">
-            <button className="px-3 py-1.5 text-xs font-semibold bg-white text-black rounded-md border border-gray-200 shadow-sm">
-              Details
-            </button>
-            <button className="px-3 py-1.5 text-xs font-medium text-gray-400 rounded-md hover:text-gray-600 transition-colors">
-              Settings
-            </button>
-          </div>
+
 
           {/* Scrollable form content */}
           <div className="flex-1 overflow-y-auto p-5 space-y-5">

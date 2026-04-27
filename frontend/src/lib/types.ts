@@ -4,6 +4,7 @@ export interface User {
   displayName: string;
   avatarUrl: string;
   bio: string;
+  skills: string[];
   isCreator: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -43,7 +44,7 @@ export interface Roadmap {
   description: string;
   creatorId: string;
   creator?: User;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   estimatedTimeMinutes: number;
   isPublic: boolean;
   isPaid: boolean;

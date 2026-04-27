@@ -12,17 +12,6 @@ import NodeEditor from './NodeEditor';
 import { v4 as uuidv4 } from 'uuid';
 import { MarkerType } from 'reactflow';
 
-const nodeTypes: NodeTypes = {
-  resource: ResourceNode,
-  text: TextNode,
-};
-
-const defaultEdgeOptions = {
-  type: 'default',
-  style: { stroke: '#000', strokeWidth: 2 },
-  markerEnd: { type: MarkerType.ArrowClosed, color: '#000' },
-};
-
 interface RoadmapEditorProps {
   initialNodes?: Node[];
   initialEdges?: Edge[];
@@ -34,6 +23,17 @@ interface RoadmapEditorProps {
 }
 
 function RoadmapEditorInner({ initialNodes = [], initialEdges = [], onSave, onChange, readOnly = false, onNodeSelect, completedResourceIds = [] }: RoadmapEditorProps) {
+  const nodeTypes = useMemo(() => ({
+    resource: ResourceNode,
+    text: TextNode,
+  }), []);
+
+  const defaultEdgeOptions = useMemo(() => ({
+    type: 'default',
+    style: { stroke: '#000', strokeWidth: 2 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#000' },
+  }), []);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);

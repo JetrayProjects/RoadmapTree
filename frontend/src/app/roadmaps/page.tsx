@@ -117,6 +117,9 @@ export default function RoadmapsPage() {
                 <Link href="/dashboard" className="text-gray-600 hover:text-black transition-colors font-medium">
                   Dashboard
                 </Link>
+                <Link href="/profile" className="text-gray-600 hover:text-black transition-colors font-medium">
+                  Profile
+                </Link>
               </>
             ) : null}
           </div>
@@ -127,7 +130,7 @@ export default function RoadmapsPage() {
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-10">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-black">Explore Roadmaps</h1>
-          <p className="text-gray-600">Discover learning paths created by experts</p>
+          <p className="text-gray-600">Discover learning paths created by other learners and experts</p>
           
           {/* Filters */}
           <div className="flex flex-wrap gap-4 items-center mt-8">

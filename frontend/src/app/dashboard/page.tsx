@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { collection, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
 
 interface DashboardRoadmap {
@@ -25,6 +26,7 @@ interface DashboardRoadmap {
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const { showToast } = useToast();
   const [myRoadmaps, setMyRoadmaps] = useState<DashboardRoadmap[]>([]);
   const [fetching, setFetching] = useState(true);
   const [deleteModal, setDeleteModal] = useState<{id: string, title: string} | null>(null);
@@ -82,9 +84,10 @@ export default function Dashboard() {
 
       setMyRoadmaps(prev => prev.filter(r => r.id !== id));
       setDeleteModal(null);
+      showToast('Roadmap deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting roadmap:', error);
-      alert('Failed to delete roadmap.');
+      showToast('Failed to delete roadmap.', 'error');
     }
   };
 
@@ -115,6 +118,9 @@ export default function Dashboard() {
             </Link>
             <Link href="/create" className="px-5 py-2.5 bg-black text-white text-sm font-semibold rounded-full hover:bg-gray-800 transition-all">
               + Create
+            </Link>
+            <Link href="/profile" className="text-gray-600 hover:text-black transition-colors font-medium">
+              Profile
             </Link>
             {user.avatarUrl && (
               <img src={user.avatarUrl} alt={user.displayName} className="w-10 h-10 rounded-full ring-2 ring-gray-200" />
@@ -247,7 +253,12 @@ export default function Dashboard() {
 
         {/* Profile Section */}
         <div>
-          <h2 className="text-xl font-bold mb-6 text-black">Profile</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-black">Profile</h2>
+            <Link href="/profile" className="text-sm font-bold text-black hover:underline px-4 py-2 border border-black rounded-full">
+              Edit Full Profile
+            </Link>
+          </div>
           <div className="bg-white rounded-2xl p-6 border border-gray-100 max-w-md">
             <div className="flex items-center gap-4 mb-4">
               {user.avatarUrl && (

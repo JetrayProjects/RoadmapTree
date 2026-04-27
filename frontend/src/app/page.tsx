@@ -28,6 +28,9 @@ export default function Home() {
                 <Link href="/dashboard" className="text-gray-600 hover:text-black transition-colors font-medium">
                   Dashboard
                 </Link>
+                <Link href="/profile" className="text-gray-600 hover:text-black transition-colors font-medium">
+                  Profile
+                </Link>
                 <button
                   onClick={signOut}
                   className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
